@@ -16,16 +16,16 @@ const int LaserCtrl = 6;
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR);
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR);
 
-const byte rows = 4;  //four rows
-const byte cols = 3;  //three columns
+const byte rows = 4;
+const byte cols = 3;
 char keys[rows][cols] = {
   { '1', '2', '3' },
   { '4', '5', '6' },
   { '7', '8', '9' },
   { '#', '0', '*' }
 };
-byte rowPins[rows] = { 10, 9, 8, 7 };  //connect to the row pinouts of the keypad
-byte colPins[cols] = { 13, 12, 11 };   //connect to the column pinouts of the keypad
+byte rowPins[rows] = { 10, 9, 8, 7 };
+byte colPins[cols] = { 13, 12, 11 };
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 const int Xmax = 300;
