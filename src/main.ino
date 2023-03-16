@@ -140,7 +140,6 @@ void processIncomingLine(char* line) {
   char* indexF = strchr(line, 'F');
   char* indexS = strchr(line, 'S');
   char* indexP = strchr(line, 'P');
-  char* indexR = strchr(line, 'R');
 
   Serial.print(line[0]);
 
