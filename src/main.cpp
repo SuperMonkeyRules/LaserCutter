@@ -1,9 +1,9 @@
-#define LINE_BUFFER_LENGTH 512
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <Keypad.h>
-//Hello from laptop
-const int MMPerStep = 1 / 250;
+
+#define LINE_BUFFER_LENGTH 512
+const float MMPerStep = 1.0 / 250.0;
 
 const int XmotorPUL = 1;
 const int XmotorDIR = 2;
@@ -36,12 +36,13 @@ const int Ymin = 0;
 int feedrate = 0;
 int amount2Step = 100;
 int brightness = 10;
-boolean debug = true;
 
 char line[LINE_BUFFER_LENGTH];
 char c;
 int lineIndex;
 bool lineIsComment, lineSemiColon;
+
+boolean debug = true;
 
 void setup() {
   Serial.begin(9600);
@@ -160,9 +161,9 @@ void processIncomingLine(char* line) {
           }
           if (indexZ) {
             if (atoi(indexZ + 1) <= 0) {
-              penDown();
+              LaserOn();
             } else {
-              penUp();
+              LaserOff();
             }
           }
           move(atoi(indexX + 1), atoi(indexY + 1));
@@ -239,11 +240,11 @@ bool is_moving(void) {
   return (Xaxis.isRunning() || Yaxis.isRunning());
 }
 
-void move(long x, long y) {
+void move(int x, int y) {
   Serial.print("Moving to ");
   Serial.print(x);
   Serial.print(", ");
-  Serial.print(y);
+  Serial.println(y);
 
   if (x > Xmax) {
     x = Xmax;
@@ -281,8 +282,7 @@ void move(long x, long y) {
   Serial.println("Move Successful");
 }
 
-//  Raises pen
-void penUp() {
+void LaserOff() {
   digitalWrite(LED_BUILTIN, false);
   analogWrite(LaserCtrl, 0);
   Xaxis.setSpeed(Xaxis.maxSpeed());
@@ -293,8 +293,7 @@ void penUp() {
   }
 }
 
-//  Lowers pen
-void penDown() {
+void LaserOn() {
   digitalWrite(LED_BUILTIN, true);
   analogWrite(LaserCtrl, brightness);
   if (debug) {
