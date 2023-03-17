@@ -20,13 +20,12 @@ AccelStepper Yaxis(1, YmotorPUL, YmotorDIR);
 const byte rows = 4;
 const byte cols = 3;
 char keys[rows][cols] = {
-  { '1', '2', '3' },
-  { '4', '5', '6' },
-  { '7', '8', '9' },
-  { '#', '0', '*' }
-};
-byte rowPins[rows] = { 10, 9, 8, 7 };
-byte colPins[cols] = { 13, 12, 11 };
+    {'1', '2', '3'},
+    {'4', '5', '6'},
+    {'7', '8', '9'},
+    {'#', '0', '*'}};
+byte rowPins[rows] = {10, 9, 8, 7};
+byte colPins[cols] = {13, 12, 11};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 const int Xmax = 300;
@@ -45,7 +44,8 @@ bool lineIsComment, lineSemiColon;
 
 boolean debug = true;
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LaserCtrl, OUTPUT);
@@ -58,74 +58,109 @@ void setup() {
   Yaxis.enableOutputs();
 }
 
-void loop() {
+void loop()
+{
   lineIndex = 0;
   lineSemiColon = false;
   lineIsComment = false;
   char key = keypad.getKey();
 
-  if (key != NO_KEY) {
+  if (key != NO_KEY)
+  {
     Serial.println(key);
-    if (key == 1) {
+    if (key == 1)
+    {
       setFeedrate(10);
     }
-    if (key == 3) {
+    if (key == 3)
+    {
       setFeedrate(50);
     }
-    if (key == 7) {
+    if (key == 7)
+    {
       setFeedrate(100);
     }
-    if (key == 9) {
+    if (key == 9)
+    {
       setFeedrate(1000);
     }
-    if (key == 2) {
+    if (key == 2)
+    {
       move(-amount2Step, Yaxis.currentPosition());
     }
-    if (key == 4) {
+    if (key == 4)
+    {
       move(amount2Step, Yaxis.currentPosition());
     }
-    if (key == 6) {
+    if (key == 6)
+    {
       move(Xaxis.currentPosition(), -amount2Step);
     }
-    if (key == 8) {
+    if (key == 8)
+    {
       move(Xaxis.currentPosition(), amount2Step);
     }
   }
 
-  while (Serial.available() > 0) {
+  while (Serial.available() > 0)
+  {
     c = Serial.read();
-    if ((c == '\n') || (c == '\r')) {
-      if (lineIndex > 0) {
+    if ((c == '\n') || (c == '\r'))
+    {
+      if (lineIndex > 0)
+      {
         line[lineIndex] = '\0';
-        if (debug) {
+        if (debug)
+        {
           Serial.print("Received: ");
           Serial.println(line);
         }
         processIncomingLine(line);
         lineIndex = 0;
-      } else {
+      }
+      else
+      {
         // Empty or comment line. Skip block.
       }
       lineIsComment = false;
       lineSemiColon = false;
       Serial.println("ok");
-    } else {
-      if ((lineIsComment) || (lineSemiColon)) {  // Throw away all comment characters
-        if (c == ')') lineIsComment = false;     // End of comment. Resume line.
-      } else {
-        if (c <= ' ') {         // Throw away whitepace and control characters
-        } else if (c == '/') {  // Block delete not supported. Ignore character.
-        } else if (c == '(') {  // Enable comments flag and ignore all characters until ')' or EOL.
+    }
+    else
+    {
+      if ((lineIsComment) || (lineSemiColon))
+      { // Throw away all comment characters
+        if (c == ')')
+          lineIsComment = false; // End of comment. Resume line.
+      }
+      else
+      {
+        if (c <= ' ')
+        { // Throw away whitepace and control characters
+        }
+        else if (c == '/')
+        { // Block delete not supported. Ignore character.
+        }
+        else if (c == '(')
+        { // Enable comments flag and ignore all characters until ')' or EOL.
           lineIsComment = true;
-        } else if (c == ';') {
+        }
+        else if (c == ';')
+        {
           lineSemiColon = true;
-        } else if (lineIndex >= LINE_BUFFER_LENGTH - 1) {
+        }
+        else if (lineIndex >= LINE_BUFFER_LENGTH - 1)
+        {
           Serial.println("ERROR - lineBuffer overflow");
           lineIsComment = false;
           lineSemiColon = false;
-        } else if (c >= 'a' && c <= 'z') {  // Upcase lowercase
+        }
+        else if (c >= 'a' && c <= 'z')
+        { // Upcase lowercase
           line[lineIndex++] = c - 'a' + 'A';
-        } else {
+        }
+        else
+        {
           line[lineIndex++] = c;
         }
       }
@@ -133,135 +168,159 @@ void loop() {
   }
 }
 
-
-void processIncomingLine(char* line) {
-  char* indexX = strchr(line, 'X');
-  char* indexY = strchr(line, 'Y');
-  char* indexZ = strchr(line, 'Z');
-  char* indexF = strchr(line, 'F');
-  char* indexS = strchr(line, 'S');
-  char* indexP = strchr(line, 'P');
+void processIncomingLine(char *line)
+{
+  char *indexX = strchr(line, 'X');
+  char *indexY = strchr(line, 'Y');
+  char *indexZ = strchr(line, 'Z');
+  char *indexF = strchr(line, 'F');
+  char *indexS = strchr(line, 'S');
+  char *indexP = strchr(line, 'P');
 
   Serial.print(line[0]);
 
-  switch (line[0]) {
-    case 'G':
-      switch (atoi(line + 1)) {
-        case 0:
-        case 1:
-          if (!indexX && !indexY) {
-            Serial.println("No X OR Y");
-            break;
-          }
-          if (indexS) {
-            setBrightness(atoi(indexS + 1));
-          }
-          if (indexF) {
-            setFeedrate(atof(indexF + 1));
-          }
-          if (indexZ) {
-            if (atoi(indexZ + 1) <= 0) {
-              LaserOn();
-            } else {
-              LaserOff();
-            }
-          }
-          move(atoi(indexX + 1), atoi(indexY + 1));
-          break;
-        case 21:
-          Serial.println("Set to Millimeters (NOT REALLY)");
-          break;
-        case 28:
-          Serial.println("HOMING");
-          move(0, 0);
-          break;
-        default:
-          Serial.println("=====ERROR ON CASE G=====");
-          break;
+  switch (line[0])
+  {
+  case 'G':
+    switch (atoi(line + 1))
+    {
+    case 0:
+    case 1:
+      if (!indexX && !indexY)
+      {
+        Serial.println("No X OR Y");
+        break;
       }
+      if (indexS)
+      {
+        setBrightness(atoi(indexS + 1));
+      }
+      if (indexF)
+      {
+        setFeedrate(atof(indexF + 1));
+      }
+      if (indexZ)
+      {
+        if (atoi(indexZ + 1) <= 0)
+        {
+          LaserOn();
+        }
+        else
+        {
+          LaserOff();
+        }
+      }
+      move(atoi(indexX + 1), atoi(indexY + 1));
       break;
-    case 'M':
-      switch (atoi(line + 1)) {
-        case 0:
-          if (indexP) {
-            delay(atoi(indexP + 1));
-          } else {
-            Serial.println("M0 recieved with no time");
-          }
-          break;
-        case 3:
-          if (indexS) {
-            setBrightness(atoi(indexS + 1));
-          }
-          break;
-        case 5:
-          if (indexS) {
-            setBrightness(0);
-          }
-          break;
-        case 8:
-          Serial.println("Air Assist On");
-          break;
-        case 9:
-          Serial.println("Air Assist Off");
-          break;
-        case 114:
-          Serial.print("Current Position (Steps): ");
-          Serial.print(Xaxis.currentPosition());
-          Serial.print(", ");
-          Serial.println(Yaxis.currentPosition());
-          break;
-        default:
-          Serial.println("=====ERROR ON CASE M=====");
-          break;
-      }
+    case 21:
+      Serial.println("Set to Millimeters (NOT REALLY)");
+      break;
+    case 28:
+      Serial.println("HOMING");
+      move(0, 0);
       break;
     default:
-      Serial.println("=====ERROR DURING GCODE INDEX=====");
+      Serial.println("=====ERROR ON CASE G=====");
       break;
+    }
+    break;
+  case 'M':
+    switch (atoi(line + 1))
+    {
+    case 0:
+      if (indexP)
+      {
+        delay(atoi(indexP + 1));
+      }
+      else
+      {
+        Serial.println("M0 recieved with no time");
+      }
+      break;
+    case 3:
+      if (indexS)
+      {
+        setBrightness(atoi(indexS + 1));
+      }
+      break;
+    case 5:
+      if (indexS)
+      {
+        setBrightness(0);
+      }
+      break;
+    case 8:
+      Serial.println("Air Assist On");
+      break;
+    case 9:
+      Serial.println("Air Assist Off");
+      break;
+    case 114:
+      Serial.print("Current Position (Steps): ");
+      Serial.print(Xaxis.currentPosition());
+      Serial.print(", ");
+      Serial.println(Yaxis.currentPosition());
+      break;
+    default:
+      Serial.println("=====ERROR ON CASE M=====");
+      break;
+    }
+    break;
+  default:
+    Serial.println("=====ERROR DURING GCODE INDEX=====");
+    break;
   }
 }
 
-void setFeedrate(float feedInMMpS) {
+void setFeedrate(float feedInMMpS)
+{
   feedrate = (feedInMMpS / MMPerStep);
   Serial.print("Setting speed to: ");
   Serial.println(feedrate);
 }
-void setBrightness(int pwrIn100) {
+void setBrightness(int pwrIn100)
+{
   brightness = (pwrIn100 / 100) * 255;
   Serial.print("Laser: ");
   Serial.println(brightness);
 }
-void poll_steppers(void) {
+void poll_steppers(void)
+{
   Xaxis.run();
   Yaxis.run();
 }
-bool is_moving(void) {
+bool is_moving(void)
+{
   return (Xaxis.isRunning() || Yaxis.isRunning());
 }
 
-void move(int x, int y) {
+void move(int x, int y)
+{
   Serial.print("Moving to ");
   Serial.print(x);
   Serial.print(", ");
   Serial.println(y);
 
-  if (x > Xmax) {
+  if (x > Xmax)
+  {
     x = Xmax;
     Serial.println("X larger than canvas.");
     return;
   }
-  if (x < Xmin) {
+  if (x < Xmin)
+  {
     x = Xmin;
     Serial.println("X smaller than canvas.");
     return;
   }
-  if (y > Ymax) {
+  if (y > Ymax)
+  {
     y = Ymax;
     Serial.println("Y larger than canvas.");
     return;
   }
-  if (y < Ymin) {
+  if (y < Ymin)
+  {
     y = Ymin;
     Serial.println("Y smaller than canvas.");
     return;
@@ -275,28 +334,33 @@ void move(int x, int y) {
 
   Xaxis.setSpeed(feedrate);
   Yaxis.setSpeed(feedrate);
-  do {
+  do
+  {
     poll_steppers();
   } while (is_moving());
 
   Serial.println("Move Successful");
 }
 
-void LaserOff() {
+void LaserOff()
+{
   digitalWrite(LED_BUILTIN, false);
   analogWrite(LaserCtrl, 0);
   Xaxis.setSpeed(Xaxis.maxSpeed());
   Yaxis.setSpeed(Yaxis.maxSpeed());
-  if (debug) {
+  if (debug)
+  {
     Serial.println("Pen up.");
     Serial.println("Traversal Speed Set.");
   }
 }
 
-void LaserOn() {
+void LaserOn()
+{
   digitalWrite(LED_BUILTIN, true);
   analogWrite(LaserCtrl, brightness);
-  if (debug) {
+  if (debug)
+  {
     Serial.println("Pen down.");
   }
 }
