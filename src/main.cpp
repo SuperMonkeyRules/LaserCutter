@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <Keypad.h>
-
+#include <LaserCutter.h>
 #define LINE_BUFFER_LENGTH 512
+
 const float MMPerStep = 1.0 / 250.0;
 
 const int XmotorPUL = 1;
