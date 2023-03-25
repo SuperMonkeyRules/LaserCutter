@@ -6,13 +6,13 @@
 
 const float MMPerStep = 1.0 / 250.0;
 
-const int XmotorPUL = 1;
-const int XmotorDIR = 2;
-const int XmotorENA = 5;
-const int YmotorPUL = 3;
-const int YmotorDIR = 4;
-const int YmotorENA = 5;
-const int LaserCtrl = 6;
+const int XmotorPUL = 15;
+const int XmotorDIR = 14;
+const int XmotorENA = 13;
+const int YmotorPUL = 16;
+const int YmotorDIR = 17;
+const int YmotorENA = 18;
+const int LaserCtrl = 22; //Not set yet
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR);
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR);
@@ -24,8 +24,8 @@ char keys[rows][cols] = {
     {'4', '5', '6'},
     {'7', '8', '9'},
     {'#', '0', '*'}};
-byte rowPins[rows] = {10, 9, 8, 7};
-byte colPins[cols] = {13, 12, 11};
+byte rowPins[rows] = {3, 2, 1, 0};
+byte colPins[cols] = {6, 5, 4};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 const int Xmax = 300;
@@ -47,15 +47,20 @@ boolean debug = true;
 void setup()
 {
   Serial.begin(9600);
+  delay(1000);
+  Serial.println("Laser Cutter on");
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LaserCtrl, OUTPUT);
 
+  Serial.println("Setting up motors");
   Xaxis.setMaxSpeed(100.0);
   Yaxis.setMaxSpeed(100.0);
   Xaxis.setEnablePin(XmotorENA);
   Yaxis.setEnablePin(YmotorENA);
   Xaxis.enableOutputs();
   Yaxis.enableOutputs();
+  Serial.println("Everything should be running");
+  Serial.println("Exiting setup");
 }
 
 void loop()
