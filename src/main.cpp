@@ -2,7 +2,6 @@
 #include <AccelStepper.h>
 #include <Keypad.h>
 #include <main.h>
-#define LINE_BUFFER_LENGTH 512
 
 const float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 
@@ -12,7 +11,7 @@ const int XmotorENA = 13;
 const int YmotorPUL = 16;
 const int YmotorDIR = 17;
 const int YmotorENA = 18;
-const int LaserCtrl = 22; //Not set yet
+const int LaserCtrl = 22; // Not set yet
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR);
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR);
@@ -33,16 +32,17 @@ const int Ymax = 300;
 const int Xmin = 0;
 const int Ymin = 0;
 
-int feedrate = 0;
+float feedrate = float(0);
+float TravSpeed = float(8000);
 int amount2Step = 100;
 int brightness = 10;
 
-char line[LINE_BUFFER_LENGTH];
+char line[512];
 char c;
 int lineIndex;
 bool lineIsComment, lineSemiColon;
 
-boolean debug = true;
+const boolean debug = true;
 
 void setup()
 {
@@ -53,12 +53,13 @@ void setup()
   pinMode(LaserCtrl, OUTPUT);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(10000);
-  Yaxis.setMaxSpeed(10000);
-  /*Xaxis.setEnablePin(XmotorENA);
+  Xaxis.setMaxSpeed(float(10000));
+  Yaxis.setMaxSpeed(float(10000));
+  // ENABLING MAY CAUSE PROBLEMS
+  Xaxis.setEnablePin(XmotorENA);
   Yaxis.setEnablePin(YmotorENA);
   Xaxis.enableOutputs();
-  Yaxis.enableOutputs();*/
+  Yaxis.enableOutputs();
   Serial.println("Everything should be running");
   Serial.println("Exiting setup");
 }
@@ -154,7 +155,7 @@ void loop()
         {
           lineSemiColon = true;
         }
-        else if (lineIndex >= LINE_BUFFER_LENGTH - 1)
+        else if (lineIndex >= 512 - 1)
         {
           Serial.println("ERROR - lineBuffer overflow");
           lineIsComment = false;
@@ -331,12 +332,8 @@ void move(int x, int y)
     return;
   }
 
-  int xInSteps = x / MMPerStep;
-  int yInSteps = y / MMPerStep;
-
-  Serial.println(xInSteps);
-  Serial.println(yInSteps);
-  Serial.println(feedrate);
+  long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
+  long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
 
   Xaxis.moveTo(xInSteps);
   Yaxis.moveTo(yInSteps);
@@ -355,8 +352,8 @@ void LaserOff()
 {
   digitalWrite(LED_BUILTIN, false);
   analogWrite(LaserCtrl, 0);
-  Xaxis.setSpeed(Xaxis.maxSpeed());
-  Yaxis.setSpeed(Yaxis.maxSpeed());
+  Xaxis.setSpeed(TravSpeed);
+  Yaxis.setSpeed(TravSpeed);
   if (debug)
   {
     Serial.println("Pen up.");
