@@ -4,7 +4,7 @@
 #include <main.h>
 #define LINE_BUFFER_LENGTH 512
 
-const float MMPerStep = 1.0 / 250.0;
+const float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 
 const int XmotorPUL = 15;
 const int XmotorDIR = 14;
@@ -53,12 +53,12 @@ void setup()
   pinMode(LaserCtrl, OUTPUT);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(100.0);
-  Yaxis.setMaxSpeed(100.0);
-  Xaxis.setEnablePin(XmotorENA);
+  Xaxis.setMaxSpeed(10000);
+  Yaxis.setMaxSpeed(10000);
+  /*Xaxis.setEnablePin(XmotorENA);
   Yaxis.setEnablePin(YmotorENA);
   Xaxis.enableOutputs();
-  Yaxis.enableOutputs();
+  Yaxis.enableOutputs();*/
   Serial.println("Everything should be running");
   Serial.println("Exiting setup");
 }
@@ -291,8 +291,8 @@ void setBrightness(int pwrIn100)
 }
 void poll_steppers(void)
 {
-  Xaxis.run();
-  Yaxis.run();
+  Xaxis.runSpeed();
+  Yaxis.runSpeed();
 }
 bool is_moving(void)
 {
@@ -333,6 +333,10 @@ void move(int x, int y)
 
   int xInSteps = x / MMPerStep;
   int yInSteps = y / MMPerStep;
+
+  Serial.println(xInSteps);
+  Serial.println(yInSteps);
+  Serial.println(feedrate);
 
   Xaxis.moveTo(xInSteps);
   Yaxis.moveTo(yInSteps);
