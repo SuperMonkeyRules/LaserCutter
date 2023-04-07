@@ -37,11 +37,6 @@ float TravSpeed = float(8000);
 int amount2Step = 100;
 int brightness = 10;
 
-char line[512];
-char c;
-int lineIndex;
-bool lineIsComment, lineSemiColon;
-
 const boolean debug = true;
 
 void setup()
@@ -66,9 +61,6 @@ void setup()
 
 void loop()
 {
-  lineIndex = 0;
-  lineSemiColon = false;
-  lineIsComment = false;
   char key = keypad.getKey();
 
   if (key != NO_KEY)
@@ -110,67 +102,15 @@ void loop()
 
   while (Serial.available() > 0)
   {
-    c = Serial.read();
-    if ((c == '\n') || (c == '\r'))
+    String data = Serial.readStringUntil('\n');
+    data.trim();
+    if (data.length() > 0)
     {
-      if (lineIndex > 0)
-      {
-        line[lineIndex] = '\0';
-        if (debug)
-        {
-          Serial.print("Received: ");
-          Serial.println(line);
-        }
-        processIncomingLine(line);
-        lineIndex = 0;
-      }
-      else
-      {
-        // Empty or comment line. Skip block.
-      }
-      lineIsComment = false;
-      lineSemiColon = false;
-      Serial.println("ok");
+      char line[data.length() + 1];
+      data.toCharArray(line, sizeof(line));
+      processIncomingLine(line);
     }
-    else
-    {
-      if ((lineIsComment) || (lineSemiColon))
-      { // Throw away all comment characters
-        if (c == ')')
-          lineIsComment = false; // End of comment. Resume line.
-      }
-      else
-      {
-        if (c <= ' ')
-        { // Throw away whitepace and control characters
-        }
-        else if (c == '/')
-        { // Block delete not supported. Ignore character.
-        }
-        else if (c == '(')
-        { // Enable comments flag and ignore all characters until ')' or EOL.
-          lineIsComment = true;
-        }
-        else if (c == ';')
-        {
-          lineSemiColon = true;
-        }
-        else if (lineIndex >= 512 - 1)
-        {
-          Serial.println("ERROR - lineBuffer overflow");
-          lineIsComment = false;
-          lineSemiColon = false;
-        }
-        else if (c >= 'a' && c <= 'z')
-        { // Upcase lowercase
-          line[lineIndex++] = c - 'a' + 'A';
-        }
-        else
-        {
-          line[lineIndex++] = c;
-        }
-      }
-    }
+    Serial.println("ok");
   }
 }
 
@@ -183,7 +123,7 @@ void processIncomingLine(char *line)
   char *indexS = strchr(line, 'S');
   char *indexP = strchr(line, 'P');
 
-  Serial.print(line[0]);
+  Serial.println(line[0]);
 
   switch (line[0])
   {
