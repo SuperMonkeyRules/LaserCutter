@@ -38,6 +38,7 @@ int amount2Step = 100;
 int brightness = 10;
 
 const boolean debug = true;
+const size_t BUFFER_SIZE = 256;
 
 void setup()
 {
@@ -103,11 +104,11 @@ void loop()
   while (Serial.available() > 0)
   {
     String data = Serial.readStringUntil('\n');
-    data.trim();
+    data.trim(); // remove any leading/trailing whitespaces
     if (data.length() > 0)
     {
-      char line[data.length() + 1];
-      data.toCharArray(line, sizeof(line));
+      char line[BUFFER_SIZE];
+      data.toCharArray(line, BUFFER_SIZE);
       processIncomingLine(line);
     }
     Serial.println("ok");
