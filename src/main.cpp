@@ -4,6 +4,7 @@
 #include <main.h>
 
 const float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
+const size_t BUFFER_SIZE = 256;
 
 const int XmotorPUL = 15;
 const int XmotorDIR = 14;
@@ -23,8 +24,8 @@ char keys[rows][cols] = {
     {'4', '5', '6'},
     {'7', '8', '9'},
     {'#', '0', '*'}};
-byte rowPins[rows] = {3, 2, 1, 0};
-byte colPins[cols] = {6, 5, 4};
+byte rowPins[rows] = {3, 2, 1, 0}; // Not set yet
+byte colPins[cols] = {6, 5, 4};    // Not set yet
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 const int Xmax = 300;
@@ -34,11 +35,10 @@ const int Ymin = 0;
 
 float feedrate = float(0);
 float TravSpeed = float(8000);
-int amount2Step = 100;
+int amount2Step = 1000;
 int brightness = 10;
 
 const boolean debug = true;
-const size_t BUFFER_SIZE = 256;
 
 void setup()
 {
@@ -85,26 +85,26 @@ void loop()
     }
     if (key == 2)
     {
-      move(-amount2Step, Yaxis.currentPosition());
+      move(-amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
     if (key == 4)
     {
-      move(amount2Step, Yaxis.currentPosition());
+      move(amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
     if (key == 6)
     {
-      move(Xaxis.currentPosition(), -amount2Step);
+      move((Xaxis.currentPosition() * MMPerStep), -amount2Step);
     }
     if (key == 8)
     {
-      move(Xaxis.currentPosition(), amount2Step);
+      move((Xaxis.currentPosition() * MMPerStep), amount2Step);
     }
   }
 
   while (Serial.available() > 0)
   {
     String data = Serial.readStringUntil('\n');
-    data.trim(); // remove any leading/trailing whitespaces
+    data.trim();
     if (data.length() > 0)
     {
       char line[BUFFER_SIZE];
