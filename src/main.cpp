@@ -117,6 +117,7 @@ void loop()
 
 void processIncomingLine(char *line)
 {
+  char *cmd = strchr(line, 'G');
   char *indexX = strchr(line, 'X');
   char *indexY = strchr(line, 'Y');
   char *indexZ = strchr(line, 'Z');
@@ -188,7 +189,7 @@ void processIncomingLine(char *line)
           LaserOff();
         }
       }
-      if (3 == 3)
+      if (atoi(cmd + 1) == 3)
         dir = 1;
       expandArc(dir, Xaxis.currentPosition(), Yaxis.currentPosition(), atoi(indexX + 1), atoi(indexY + 1), atoi(indexI + 1), atoi(indexJ + 1));
       break;
@@ -276,8 +277,9 @@ bool is_moving(void)
 
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal)
 {
-  float startX = prevXaxisVal;
-  float startY = prevYaxisVal;
+
+  float startX = (prevXaxisVal)*MMPerStep;
+  float startY = (prevYaxisVal)*MMPerStep;
 
   float centreX = startX + iVal;
   float centreY = startY + jVal;
