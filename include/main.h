@@ -8,7 +8,7 @@ void LaserOn();
 void processIncomingLine(char* line);
 void move(int x, int y);
 bool is_moving(void);
-void expandArc(String gCmd, float prevXaxisVal, float prevYaxisVal, float xAxisVal, float yAxisVal, float iVal, float jVal)
+void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal);
 void poll_steppers(void);
 
 #endif
