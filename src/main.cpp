@@ -159,6 +159,34 @@ void processIncomingLine(char *line)
       }
       move(atoi(indexX + 1), atoi(indexY + 1));
       break;
+    case 2:
+    case 3:
+      if (!indexX && !indexY)
+      {
+        Serial.println("No X OR Y");
+        break;
+      }
+      if (indexS)
+      {
+        setBrightness(atoi(indexS + 1));
+      }
+      if (indexF)
+      {
+        setFeedrate(atof(indexF + 1));
+      }
+      if (indexZ)
+      {
+        if (atoi(indexZ + 1) <= 0)
+        {
+          LaserOn();
+        }
+        else
+        {
+          LaserOff();
+        }
+      }
+      expandArc();
+      break;
     case 21:
       Serial.println("Set to Millimeters (NOT REALLY)");
       break;
@@ -241,73 +269,117 @@ bool is_moving(void)
   return (Xaxis.isRunning() || Yaxis.isRunning());
 }
 
+void expandArc(int dirn, float prevXaxisVal, float prevYaxisVal, float xAxisVal, float yAxisVal, float iVal, float jVal)
+{
+    startX = prevXaxisVal;
+    startY = prevYaxisVal;
+
+    centreX = startX + iVal;
+    centreY = startY + jVal;
+    dxStart = startX - centreX;
+    dyStart = startY - centreY;
+    startAngle = math.atan2(dyStart, dxStart);
+    dxEnd = xAxisVal - centreX;
+    dyEnd = yAxisVal - centreY;
+    endAngle = math.atan2(dyEnd, dxEnd);
+    if endAngle > startAngle{
+        endAngle = endAngle - (math.pi * 2);
+    }
+    radius = math.sqrt((dyStart * dyStart) + (dxStart * dxStart));
+
+    sweep = endAngle - startAngle;
+    if dirn == 'CCW'{
+        sweep = (math.pi * 2) + sweep;
+    }
+    numSegments = int(abs(sweep / (math.pi * 2) * 64));
+
+    for x in range(numSegments){
+        fraction = float(x) / numSegments;
+        stepAngle = startAngle + (sweep * fraction);
+        stepX = centreX + math.cos(stepAngle) * radius;
+        stepY = centreY + math.sin(stepAngle) * radius;
+        if dirn == 'CW'{
+            if sweep > 0{
+                stepY = - stepY;
+            }
+        }
+        else{
+            if sweep < 0{
+                stepY = - stepY;
+            }
+        }
+        arcMoveList.append([round(stepX, 4), round(stepY, 4)]);
+    }
+    arcMoveList.append([xAxisVal, yAxisVal]);
+}
+
 void move(int x, int y)
 {
-  Serial.print("Moving to ");
-  Serial.print(x);
-  Serial.print(", ");
-  Serial.println(y);
+    Serial.print("Moving to ");
+    Serial.print(x);
+    Serial.print(", ");
+    Serial.println(y);
 
-  if (x > Xmax)
-  {
-    x = Xmax;
-    Serial.println("X larger than canvas.");
-    return;
-  }
-  if (x < Xmin)
-  {
-    x = Xmin;
-    Serial.println("X smaller than canvas.");
-    return;
-  }
-  if (y > Ymax)
-  {
-    y = Ymax;
-    Serial.println("Y larger than canvas.");
-    return;
-  }
-  if (y < Ymin)
-  {
-    y = Ymin;
-    Serial.println("Y smaller than canvas.");
-    return;
-  }
+    if (x > Xmax)
+    {
+      x = Xmax;
+      Serial.println("X larger than canvas.");
+      return;
+    }
+    if (x < Xmin)
+    {
+      x = Xmin;
+      Serial.println("X smaller than canvas.");
+      return;
+    }
+    if (y > Ymax)
+    {
+      y = Ymax;
+      Serial.println("Y larger than canvas.");
+      return;
+    }
+    if (y < Ymin)
+    {
+      y = Ymin;
+      Serial.println("Y smaller than canvas.");
+      return;
+    }
 
-  long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
-  long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
+    long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
+    long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
 
-  Xaxis.moveTo(xInSteps);
-  Yaxis.moveTo(yInSteps);
+    Xaxis.moveTo(xInSteps);
+    Yaxis.moveTo(yInSteps);
 
-  Xaxis.setSpeed(feedrate);
-  Yaxis.setSpeed(feedrate);
-  do
-  {
-    poll_steppers();
-  } while (is_moving());
+    Xaxis.setSpeed(feedrate);
+    Yaxis.setSpeed(feedrate);
+    do
+    {
+      poll_steppers();
+    } while (is_moving());
 
-  Serial.println("Move Successful");
+    Serial.println("Move Successful");
 }
 
 void LaserOff()
 {
-  digitalWrite(LED_BUILTIN, false);
-  analogWrite(LaserCtrl, 0);
-  Xaxis.setSpeed(TravSpeed);
-  Yaxis.setSpeed(TravSpeed);
-  if (debug)
-  {
-    Serial.println("Pen up.");
-    Serial.println("Traversal Speed Set.");
-  }
+    digitalWrite(LED_BUILTIN, false);
+    analogWrite(LaserCtrl, 0);
+    Xaxis.setSpeed(TravSpeed);
+    Yaxis.setSpeed(TravSpeed);
+    if (debug)
+    {
+      Serial.println("Pen up.");
+      Serial.println("Traversal Speed Set.");
+    }
 }
 
 void LaserOn()
 {
-  digitalWrite(LED_BUILTIN, true);
-  analogWrite(LaserCtrl, brightness);
-  if (debug)
-  {
-    Serial.println("Pen down.");
-  }
+    digitalWrite(LED_BUILTIN, true);
+    analogWrite(LaserCtrl, brightness);
+    if (debug)
+    {
+      Serial.println("Pen down.");
+    }
 }
