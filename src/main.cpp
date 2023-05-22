@@ -28,13 +28,13 @@ byte rowPins[rows] = {3, 2, 1, 0}; // Not set yet
 byte colPins[cols] = {6, 5, 4};    // Not set yet
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
-const int Xmax = 300;
-const int Ymax = 300;
+const int Xmax = 500;
+const int Ymax = 500;
 const int Xmin = 0;
 const int Ymin = 0;
 
 float feedrate = float(0);
-float TravSpeed = float(8000);
+float TravSpeed = float(750);
 int amount2Step = 1000;
 int brightness = 10;
 
@@ -49,8 +49,8 @@ void setup()
   pinMode(LaserCtrl, OUTPUT);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(float(10000));
-  Yaxis.setMaxSpeed(float(10000));
+  Xaxis.setMaxSpeed(float(750));
+  Yaxis.setMaxSpeed(float(750));
   // ENABLING MAY CAUSE PROBLEMS
   Xaxis.setEnablePin(XmotorENA);
   Yaxis.setEnablePin(YmotorENA);
@@ -265,15 +265,6 @@ void setBrightness(int pwrIn100)
   Serial.print("Laser: ");
   Serial.println(brightness);
 }
-void poll_steppers(void)
-{
-  Xaxis.runSpeed();
-  Yaxis.runSpeed();
-}
-bool is_moving(void)
-{
-  return (Xaxis.isRunning() || Yaxis.isRunning());
-}
 
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal)
 {
@@ -326,12 +317,29 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
   }
 }
 
+void poll_steppers(void)
+{
+  Xaxis.runSpeedToPosition();
+  Yaxis.runSpeedToPosition();
+}
+bool is_moving(void)
+{
+  return (Xaxis.currentPosition() != Xaxis.targetPosition() || Xaxis.currentPosition() != Xaxis.targetPosition());
+}
+
 void move(int x, int y)
 {
+  Serial.print("Currently at ");
+  Serial.print(Xaxis.currentPosition() * MMPerStep);
+  Serial.print("mm, ");
+  Serial.print(Yaxis.currentPosition() * MMPerStep);
+  Serial.println("mm");
+
   Serial.print("Moving to ");
   Serial.print(x);
-  Serial.print(", ");
-  Serial.println(y);
+  Serial.print("mm, ");
+  Serial.print(y);
+  Serial.println("mm");
 
   if (x > Xmax)
   {
@@ -363,9 +371,17 @@ void move(int x, int y)
 
   Xaxis.moveTo(xInSteps);
   Yaxis.moveTo(yInSteps);
+  Serial.print("X Moving to ");
+  Serial.print(xInSteps);
+  Serial.println("(steps)");
+  Serial.print("Y Moving to ");
+  Serial.print(yInSteps);
+  Serial.println("(steps)");
 
   Xaxis.setSpeed(feedrate);
   Yaxis.setSpeed(feedrate);
+  Serial.println("Set feedrates");
+
   do
   {
     poll_steppers();
