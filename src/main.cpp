@@ -3,7 +3,7 @@
 #include <Keypad.h>
 #include <main.h>
 
-const float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
+float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 const size_t BUFFER_SIZE = 256;
 
 const int XmotorPUL = 15;
@@ -235,6 +235,29 @@ void processIncomingLine(char *line)
       break;
     case 9:
       Serial.println("Air Assist Off");
+      break;
+    case 17:
+      Xaxis.enableOutputs();
+      Yaxis.enableOutputs();
+      break;
+    case 18:
+      Xaxis.disableOutputs();
+      Yaxis.disableOutputs();
+      break;
+    case 84:
+      Xaxis.disableOutputs();
+      Yaxis.disableOutputs();
+      break;
+    case 92:
+      Serial.println("Setting microstepping");
+      if (indexX)
+      {
+        MMPerStep = MMPerStep / atoi(indexX + 1);
+      }
+      if (indexY)
+      {
+        MMPerStep = MMPerStep / atoi(indexY + 1);
+      }
       break;
     case 114:
       Serial.print("Current Position (Steps): ");
