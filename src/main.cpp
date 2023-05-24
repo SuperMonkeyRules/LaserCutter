@@ -223,10 +223,10 @@ void processIncomingLine(char *line)
       }
       break;
     case 114:
-      Serial.print("Current Position (Steps): ");
-      Serial.print(Xaxis.currentPosition());
+      Serial.print("Current Position (MM?): ");
+      Serial.print(Xaxis.currentPosition() * MMPerStep);
       Serial.print(", ");
-      Serial.println(Yaxis.currentPosition());
+      Serial.println(Yaxis.currentPosition() * MMPerStep);
       break;
     default:
       Serial.println("=====ERROR ON CASE M=====");
@@ -357,15 +357,13 @@ void move(int x, int y)
 {
   Serial.print("Currently at ");
   Serial.print(Xaxis.currentPosition() * MMPerStep);
-  Serial.print("mm, ");
-  Serial.print(Yaxis.currentPosition() * MMPerStep);
-  Serial.println("mm");
+  Serial.print(", ");
+  Serial.println(Yaxis.currentPosition() * MMPerStep);
 
   Serial.print("Moving to ");
   Serial.print(x);
-  Serial.print("mm, ");
-  Serial.print(y);
-  Serial.println("mm");
+  Serial.print(", ");
+  Serial.println(y);
 
   if (x > Xmax)
   {
@@ -397,16 +395,9 @@ void move(int x, int y)
 
   Xaxis.moveTo(xInSteps);
   Yaxis.moveTo(yInSteps);
-  Serial.print("X Moving to ");
-  Serial.print(xInSteps);
-  Serial.println("(steps)");
-  Serial.print("Y Moving to ");
-  Serial.print(yInSteps);
-  Serial.println("(steps)");
 
   Xaxis.setSpeed(feedrate);
   Yaxis.setSpeed(feedrate);
-  Serial.println("Set feedrates");
 
   do
   {
