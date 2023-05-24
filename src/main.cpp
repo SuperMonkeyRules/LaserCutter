@@ -3,16 +3,16 @@
 #include <Keypad.h>
 #include <cutter.h>
 
-const float defaultStep = 1.0 / 25.0;
-float MMPerStep = defaultStep; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
+const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
+float MMPerStep = defaultStep;        // Changeable step per mm
 const size_t BUFFER_SIZE = 256;
 
-const int XmotorPUL = 15;
-const int XmotorDIR = 14;
-const int XmotorENA = 13;
-const int YmotorPUL = 16;
-const int YmotorDIR = 17;
-const int YmotorENA = 18;
+const int XmotorPUL = 15; // GPIO pin 15
+const int XmotorDIR = 14; // GPIO pin 14
+const int XmotorENA = 13; // GPIO pin 13
+const int YmotorPUL = 16; // GPIO pin 16
+const int YmotorDIR = 17; // GPIO pin 17
+const int YmotorENA = 18; // GPIO pin 18
 const int LaserCtrl = 22; // Not set yet
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR);
@@ -29,15 +29,15 @@ byte rowPins[rows] = {3, 2, 1, 0}; // Not set yet
 byte colPins[cols] = {6, 5, 4};    // Not set yet
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
-const int Xmax = 500;
-const int Ymax = 500;
-const int Xmin = 0;
-const int Ymin = 0;
+const int Xmax = 500; // Max X bed size
+const int Ymax = 500; // Max Y bed size
+const int Xmin = 0;   // Min X bed size
+const int Ymin = 0;   // Min Y bed size
 
 float feedrate = float(0);
 float TravSpeed = float(750);
-int amount2Step = 1000;
-int brightness = 10;
+int amount2Step = 50; // Manual movements in mm
+int brightness = 0;   // Laser power 0-100
 
 const boolean debug = true;
 
@@ -63,44 +63,7 @@ void setup()
 
 void loop()
 {
-  char key = keypad.getKey();
-
-  if (key != NO_KEY)
-  {
-    Serial.println(key);
-    if (key == 1)
-    {
-      setFeedrate(10);
-    }
-    if (key == 3)
-    {
-      setFeedrate(50);
-    }
-    if (key == 7)
-    {
-      setFeedrate(100);
-    }
-    if (key == 9)
-    {
-      setFeedrate(1000);
-    }
-    if (key == 2)
-    {
-      move(-amount2Step, (Yaxis.currentPosition() * MMPerStep));
-    }
-    if (key == 4)
-    {
-      move(amount2Step, (Yaxis.currentPosition() * MMPerStep));
-    }
-    if (key == 6)
-    {
-      move((Xaxis.currentPosition() * MMPerStep), -amount2Step);
-    }
-    if (key == 8)
-    {
-      move((Xaxis.currentPosition() * MMPerStep), amount2Step);
-    }
-  }
+  ManualMovement(keypad.getKey());
 
   while (Serial.available() > 0)
   {
@@ -274,6 +237,46 @@ void processIncomingLine(char *line)
   default:
     Serial.println("=====ERROR DURING GCODE INDEX=====");
     break;
+  }
+}
+
+void ManualMovement(char key)
+{
+  if (key != NO_KEY)
+  {
+    Serial.println(key);
+    if (key == 1)
+    {
+      setFeedrate(1);
+    }
+    if (key == 3)
+    {
+      setFeedrate(10);
+    }
+    if (key == 7)
+    {
+      setFeedrate(25);
+    }
+    if (key == 9)
+    {
+      setFeedrate(40);
+    }
+    if (key == 2)
+    {
+      move(-amount2Step, (Yaxis.currentPosition() * MMPerStep));
+    }
+    if (key == 4)
+    {
+      move(amount2Step, (Yaxis.currentPosition() * MMPerStep));
+    }
+    if (key == 6)
+    {
+      move((Xaxis.currentPosition() * MMPerStep), -amount2Step);
+    }
+    if (key == 8)
+    {
+      move((Xaxis.currentPosition() * MMPerStep), amount2Step);
+    }
   }
 }
 
