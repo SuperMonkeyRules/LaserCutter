@@ -34,10 +34,10 @@ const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = float(0);
-float TravSpeed = float(750);
-int amount2Step = 50; // Manual movements in mm
-int brightness = 0;   // Laser power 0-100
+float feedrate = float(0);    // Speed in mm/s of motors
+float TravSpeed = float(750); // Traversal speed in steps
+int amount2Step = 50;         // Manual movements in mm
+int brightness = 0;           // Laser power 0-100
 
 const boolean debug = true;
 
@@ -57,7 +57,6 @@ void setup()
   Yaxis.setEnablePin(YmotorENA);
   Xaxis.enableOutputs();
   Yaxis.enableOutputs();
-  Serial.println("Everything should be running");
   Serial.println("Exiting setup");
 }
 
