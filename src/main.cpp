@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <Keypad.h>
-#include <main.h>
+#include <cutter.h>
 
 const float defaultStep = 1.0 / 25.0;
 float MMPerStep = defaultStep; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
