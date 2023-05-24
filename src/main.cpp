@@ -3,7 +3,8 @@
 #include <Keypad.h>
 #include <main.h>
 
-float MMPerStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
+const float defaultStep = 1.0 / 25.0;
+float MMPerStep = defaultStep; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 const size_t BUFFER_SIZE = 256;
 
 const int XmotorPUL = 15;
@@ -252,11 +253,11 @@ void processIncomingLine(char *line)
       Serial.println("Setting microstepping");
       if (indexX)
       {
-        MMPerStep = MMPerStep / atoi(indexX + 1);
+        MMPerStep = defaultStep / atoi(indexX + 1);
       }
       if (indexY)
       {
-        MMPerStep = MMPerStep / atoi(indexY + 1);
+        MMPerStep = defaultStep / atoi(indexY + 1);
       }
       break;
     case 114:
