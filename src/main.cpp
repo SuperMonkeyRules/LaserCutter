@@ -4,7 +4,7 @@
 #include <cutter.h>
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
-float MMPerStep = defaultStep;        // Changeable step per mm
+float MMPerStep = defaultStep;        // Changeable mm per step
 const size_t BUFFER_SIZE = 256;
 
 const int XmotorPUL = 15; // GPIO pin 15
