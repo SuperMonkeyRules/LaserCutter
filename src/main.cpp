@@ -5,7 +5,7 @@
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep;        // Changeable mm per step
-const size_t BUFFER_SIZE = 256;
+const size_t BUFFER_SIZE = 256;       // Size in bytes of text buffer
 
 const int XmotorPUL = 15; // GPIO pin 15
 const int XmotorDIR = 14; // GPIO pin 14
@@ -15,8 +15,8 @@ const int YmotorDIR = 17; // GPIO pin 17
 const int YmotorENA = 18; // GPIO pin 18
 const int LaserCtrl = 22; // Not set yet
 
-AccelStepper Xaxis(1, XmotorPUL, XmotorDIR);
-AccelStepper Yaxis(1, YmotorPUL, YmotorDIR);
+AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
+AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
 
 const byte rows = 4;
 const byte cols = 3;
@@ -100,7 +100,7 @@ void processIncomingLine(char *line)
     {
     case 0:
     case 1:
-      if (!indexX && !indexY)
+      if (!indexX || !indexY)
       {
         Serial.println("No X OR Y");
         break;
@@ -115,14 +115,7 @@ void processIncomingLine(char *line)
       }
       if (indexZ)
       {
-        if (atoi(indexZ + 1) <= 0)
-        {
-          LaserOn();
-        }
-        else
-        {
-          LaserOff();
-        }
+        laserToggle(atoi(indexZ + 1));
       }
       move(atoi(indexX + 1), atoi(indexY + 1));
       break;
@@ -143,14 +136,7 @@ void processIncomingLine(char *line)
       }
       if (indexZ)
       {
-        if (atoi(indexZ + 1) <= 0)
-        {
-          LaserOn();
-        }
-        else
-        {
-          LaserOff();
-        }
+        laserToggle(atoi(indexZ + 1));
       }
       if (atoi(cmd + 1) == 3)
         dir = 1;
@@ -317,7 +303,7 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
   {
     sweep = (PI * 2) + sweep;
   }
-  int numSegments = int(abs(sweep / (PI * 2) * 64));
+  int numSegments = int(abs(sweep / (PI * 2) * (round(radius) * 4)));
 
   for (int x = 0; x < numSegments; x++)
   {
@@ -348,6 +334,7 @@ void poll_steppers(void)
   Xaxis.runSpeedToPosition();
   Yaxis.runSpeedToPosition();
 }
+
 bool is_moving(void)
 {
   return (Xaxis.currentPosition() != Xaxis.targetPosition() || Xaxis.currentPosition() != Xaxis.targetPosition());
@@ -407,25 +394,27 @@ void move(int x, int y)
   Serial.println("Move Successful");
 }
 
-void LaserOff()
+void laserToggle(int Zaxis)
 {
-  digitalWrite(LED_BUILTIN, false);
-  analogWrite(LaserCtrl, 0);
-  Xaxis.setSpeed(TravSpeed);
-  Yaxis.setSpeed(TravSpeed);
-  if (debug)
+  if (Zaxis >= 0)
   {
-    Serial.println("Pen up.");
-    Serial.println("Traversal Speed Set.");
+    digitalWrite(LED_BUILTIN, false);
+    analogWrite(LaserCtrl, 0);
+    Xaxis.setSpeed(TravSpeed);
+    Yaxis.setSpeed(TravSpeed);
+    if (debug)
+    {
+      Serial.println("Pen up.");
+      Serial.println("Traversal Speed Set.");
+    }
   }
-}
-
-void LaserOn()
-{
-  digitalWrite(LED_BUILTIN, true);
-  analogWrite(LaserCtrl, brightness);
-  if (debug)
+  else
   {
-    Serial.println("Pen down.");
+    digitalWrite(LED_BUILTIN, true);
+    analogWrite(LaserCtrl, brightness);
+    if (debug)
+    {
+      Serial.println("Pen down.");
+    }
   }
 }

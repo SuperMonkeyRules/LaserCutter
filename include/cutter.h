@@ -3,8 +3,7 @@
 
 void setFeedrate(float feedInMMpS);
 void setBrightness(int pwrIn100);
-void LaserOff();
-void LaserOn();
+void laserToggle(int Zaxis);
 void processIncomingLine(char* line);
 void move(int x, int y);
 bool is_moving(void);
