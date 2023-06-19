@@ -2,7 +2,7 @@
 #include <AccelStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.01
+#define version 1.02
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep;        // Changeable mm per step
@@ -51,8 +51,8 @@ void setup()
   pinMode(LaserCtrl, OUTPUT);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(float(750));
-  Yaxis.setMaxSpeed(float(750));
+  Xaxis.setMaxSpeed(100000.0);
+  Yaxis.setMaxSpeed(100000.0);
   // ENABLING MAY CAUSE PROBLEMS
   // Xaxis.setEnablePin(XmotorENA);
   // Yaxis.setEnablePin(YmotorENA);
