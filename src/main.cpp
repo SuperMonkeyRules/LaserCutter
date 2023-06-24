@@ -8,12 +8,12 @@ const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 2
 float MMPerStep = defaultStep;        // Changeable mm per step
 const size_t BUFFER_SIZE = 256;       // Size in bytes of text buffer
 
-const int XmotorPUL = 15; // GPIO pin 15
-const int XmotorDIR = 14; // GPIO pin 14
-const int XmotorENA = 13; // GPIO pin 13
-const int YmotorPUL = 16; // GPIO pin 16
-const int YmotorDIR = 17; // GPIO pin 17
-const int YmotorENA = 18; // GPIO pin 18
+const int XmotorPUL = 10; // GPIO pin 10
+const int XmotorDIR = 12; // GPIO pin 14
+const int XmotorENA = 15; // GPIO pin 13
+const int YmotorPUL = 11; // GPIO pin 16
+const int YmotorDIR = 13; // GPIO pin 17
+const int YmotorENA = 15; // GPIO pin 18
 const int LaserCtrl = 22; // Not set yet
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
