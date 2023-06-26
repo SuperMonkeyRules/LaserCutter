@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
+#include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
 #define version 1.02
@@ -18,6 +19,7 @@ const int LaserCtrl = 22; // Not set yet
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
+MultiStepper XYaxis;
 
 const byte rows = 4;
 const byte cols = 3;
@@ -51,13 +53,15 @@ void setup()
   pinMode(LaserCtrl, OUTPUT);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(100000.0);
-  Yaxis.setMaxSpeed(100000.0);
   // ENABLING MAY CAUSE PROBLEMS
   // Xaxis.setEnablePin(XmotorENA);
   // Yaxis.setEnablePin(YmotorENA);
   // Xaxis.enableOutputs();
   // Yaxis.enableOutputs();
+
+  XYaxis.addStepper(Xaxis);
+  XYaxis.addStepper(Yaxis);
+
   Serial.println("Exiting setup");
 }
 
@@ -276,6 +280,7 @@ void setFeedrate(float feedInMMpS)
   Serial.print("Setting speed to: ");
   Serial.println(feedrate);
 }
+
 void setBrightness(int pwrIn100)
 {
   brightness = (pwrIn100 / 100) * 255;
@@ -334,17 +339,6 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
   }
 }
 
-void poll_steppers(void)
-{
-  Xaxis.runSpeedToPosition();
-  Yaxis.runSpeedToPosition();
-}
-
-bool is_moving(void)
-{
-  return (Xaxis.currentPosition() != Xaxis.targetPosition() || Xaxis.currentPosition() != Xaxis.targetPosition());
-}
-
 void move(int x, int y)
 {
   Serial.print("Currently at ");
@@ -385,16 +379,15 @@ void move(int x, int y)
   long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
   long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
 
-  Xaxis.moveTo(xInSteps);
-  Yaxis.moveTo(yInSteps);
+  Xaxis.setMaxSpeed(feedrate);
+  Yaxis.setMaxSpeed(feedrate);
 
-  Xaxis.setSpeed(feedrate);
-  Yaxis.setSpeed(feedrate);
+  long positions[2];
 
-  do
-  {
-    poll_steppers();
-  } while (is_moving());
+  positions[0] = xInSteps;
+  positions[1] = yInSteps;
+  XYaxis.moveTo(positions);
+  XYaxis.runSpeedToPosition(); // Blocks until all are in position CHANGE LATER
 
   Serial.println("Move Successful");
 }
@@ -405,8 +398,8 @@ void laserToggle(int Zaxis)
   {
     digitalWrite(LED_BUILTIN, false);
     analogWrite(LaserCtrl, 0);
-    Xaxis.setSpeed(TravSpeed);
-    Yaxis.setSpeed(TravSpeed);
+    Xaxis.setMaxSpeed(TravSpeed);
+    Yaxis.setMaxSpeed(TravSpeed);
     if (debug)
     {
       Serial.println("Pen up.");
