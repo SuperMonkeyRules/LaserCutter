@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.02
+#define version 1.10
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep;        // Changeable mm per step
@@ -21,6 +21,7 @@ AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 En
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
 MultiStepper XYaxis;
 
+/**/
 const byte rows = 4;
 const byte cols = 3;
 char keys[rows][cols] = {
@@ -37,10 +38,10 @@ const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = float(0);    // Speed in mm/s of motors
-float TravSpeed = float(750); // Traversal speed in steps
-int amount2Step = 50;         // Manual movements in mm
-int brightness = 0;           // Laser power 0-100
+float feedrate = 0.0F;  // Speed in mm/s of motors
+float TravSpeed = 0.0F; // Traversal speed in steps
+int amount2Step = 50;   // Manual movements in mm
+int brightness = 0;     // Laser power 0-100
 
 const boolean debug = true;
 
@@ -290,7 +291,6 @@ void setBrightness(int pwrIn100)
 
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal)
 {
-
   float startX = (prevXaxisVal)*MMPerStep;
   float startY = (prevYaxisVal)*MMPerStep;
 
