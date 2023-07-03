@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.10
+#define version 1.11
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep;        // Changeable mm per step
