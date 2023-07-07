@@ -3,10 +3,10 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.11
+#define version 1.12
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
-float MMPerStep = defaultStep;        // Changeable mm per step
+float MMPerStep = defaultStep / 4;    // Changeable mm per step
 const size_t BUFFER_SIZE = 256;       // Size in bytes of text buffer
 
 const int XmotorPUL = 10; // GPIO pin 10
@@ -21,16 +21,18 @@ AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 En
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
 MultiStepper XYaxis;
 
-/**/
 const byte rows = 4;
 const byte cols = 3;
 char keys[rows][cols] = {
-    {'1', '2', '3'},
-    {'4', '5', '6'},
-    {'7', '8', '9'},
-    {'#', '0', '*'}};
-byte rowPins[rows] = {3, 2, 1, 0}; // Not set yet
-byte colPins[cols] = {6, 5, 4};    // Not set yet
+    {'1', '2', '3'}, // 2 pin 5
+    {'4', '5', '6'}, // 7 pin 0
+    {'7', '8', '9'}, // 6 pin 1
+    {'#', '0', '*'}  // 4 pin 3
+  //  3    1    5
+  //  4    6    2 (pins)
+};
+byte rowPins[rows] = {5, 0, 1, 3}; // Not set yet
+byte colPins[cols] = {4, 6, 2};    // Not set yet
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 const int Xmax = 500; // Max X bed size
@@ -240,35 +242,35 @@ void ManualMovement(char key)
   if (key != NO_KEY)
   {
     Serial.println(key);
-    if (key == 1)
+    if (key == '1')
     {
       setFeedrate(1);
     }
-    if (key == 3)
+    if (key == '3')
     {
       setFeedrate(10);
     }
-    if (key == 7)
+    if (key == '7')
     {
       setFeedrate(25);
     }
-    if (key == 9)
+    if (key == '9')
     {
       setFeedrate(40);
     }
-    if (key == 2)
+    if (key == '2')
     {
       move(-amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
-    if (key == 4)
+    if (key == '4')
     {
       move(amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
-    if (key == 6)
+    if (key == '6')
     {
       move((Xaxis.currentPosition() * MMPerStep), -amount2Step);
     }
-    if (key == 8)
+    if (key == '8')
     {
       move((Xaxis.currentPosition() * MMPerStep), amount2Step);
     }
