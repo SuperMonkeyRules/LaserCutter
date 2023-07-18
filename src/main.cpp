@@ -2,7 +2,7 @@
 #include <AccelStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.02
+#define version 1.04
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep;        // Changeable mm per step
@@ -14,7 +14,8 @@ const int XmotorENA = 13; // GPIO pin 13
 const int YmotorPUL = 16; // GPIO pin 16
 const int YmotorDIR = 17; // GPIO pin 17
 const int YmotorENA = 18; // GPIO pin 18
-const int LaserCtrl = 22; // Not set yet
+const int LaserPWM = 3;   // GPIO pin 1
+const int LaserTGL = 2;   // GPIO pin 0
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
@@ -48,7 +49,9 @@ void setup()
   delay(1000);
   Serial.println("Laser Cutter on");
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LaserCtrl, OUTPUT);
+  pinMode(LaserPWM, OUTPUT);
+  pinMode(LaserTGL, OUTPUT);
+  digitalWrite(LaserTGL, true);
 
   Serial.println("Setting up motors");
   Xaxis.setMaxSpeed(100000.0);
@@ -219,6 +222,9 @@ void processIncomingLine(char *line)
       Serial.print("Current version: ");
       Serial.println(version);
       break;
+    case 810:
+      laserTest();
+      break;
     default:
       Serial.println("=====ERROR ON CASE M=====");
       break;
@@ -285,7 +291,6 @@ void setBrightness(int pwrIn100)
 
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal)
 {
-
   float startX = (prevXaxisVal)*MMPerStep;
   float startY = (prevYaxisVal)*MMPerStep;
 
@@ -332,6 +337,15 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
     }
     move(round(stepX), round(stepY));
   }
+}
+
+void laserTest()
+{
+  laserToggle(1);
+  setBrightness(5);
+  laserToggle(0);
+  delay(5);
+  laserToggle(1);
 }
 
 void poll_steppers(void)
@@ -404,7 +418,8 @@ void laserToggle(int Zaxis)
   if (Zaxis >= 0)
   {
     digitalWrite(LED_BUILTIN, false);
-    analogWrite(LaserCtrl, 0);
+    digitalWrite(LaserTGL, true);
+    analogWrite(LaserPWM, 0);
     Xaxis.setSpeed(TravSpeed);
     Yaxis.setSpeed(TravSpeed);
     if (debug)
@@ -416,7 +431,8 @@ void laserToggle(int Zaxis)
   else
   {
     digitalWrite(LED_BUILTIN, true);
-    analogWrite(LaserCtrl, brightness);
+    digitalWrite(LaserTGL, false);
+    analogWrite(LaserPWM, brightness);
     if (debug)
     {
       Serial.println("Pen down.");
