@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.15
+#define version 1.16
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -52,6 +52,8 @@ void setup()
   Serial.begin(9600);
   delay(1000);
   Serial.println("Laser Cutter on");
+  Serial.print("Version: ");
+  Serial.println(version);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LaserPWM, OUTPUT);
   pinMode(LaserTGL, OUTPUT);
@@ -447,8 +449,8 @@ void laserToggle(int Zaxis)
   else
   {
     digitalWrite(LED_BUILTIN, true);
-    digitalWrite(LaserTGL, false);
     analogWrite(LaserPWM, brightness);
+    digitalWrite(LaserTGL, false);
     if (debug)
     {
       Serial.println("Pen down.");
