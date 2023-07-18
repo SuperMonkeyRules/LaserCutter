@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
+#include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.04
+#define version 1.12
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
-float MMPerStep = defaultStep;        // Changeable mm per step
+float MMPerStep = defaultStep / 4;    // Changeable mm per step
 const size_t BUFFER_SIZE = 256;       // Size in bytes of text buffer
 
 const int XmotorPUL = 15; // GPIO pin 15
@@ -19,29 +20,32 @@ const int LaserTGL = 2;   // GPIO pin 0
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
+MultiStepper XYaxis;
 
-const byte rows = 4;
-const byte cols = 3;
-char keys[rows][cols] = {
+const byte ROWS = 4; // four rows
+const byte COLS = 3; // three columns
+char keys[ROWS][COLS] = {
     {'1', '2', '3'},
     {'4', '5', '6'},
     {'7', '8', '9'},
-    {'#', '0', '*'}};
-byte rowPins[rows] = {3, 2, 1, 0}; // Not set yet
-byte colPins[cols] = {6, 5, 4};    // Not set yet
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
+    {'*', '0', '#'}};
+byte rowPins[ROWS] = {5, 4, 3, 2}; // connect to the row pinouts of the kpd
+byte colPins[COLS] = {8, 7, 6};    // connect to the column pinouts of the kpd
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 const int Xmax = 500; // Max X bed size
 const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = float(0);    // Speed in mm/s of motors
-float TravSpeed = float(750); // Traversal speed in steps
-int amount2Step = 50;         // Manual movements in mm
-int brightness = 0;           // Laser power 0-100
+float feedrate = 0.0F;  // Speed in mm/s of motors
+float TravSpeed = 0.0F; // Traversal speed in steps
+int amount2Step = 50;   // Manual movements in mm
+int brightness = 0;     // Laser power 0-100
 
 const boolean debug = true;
+boolean skipLimits = true;
 
 void setup()
 {
@@ -54,19 +58,21 @@ void setup()
   digitalWrite(LaserTGL, true);
 
   Serial.println("Setting up motors");
-  Xaxis.setMaxSpeed(100000.0);
-  Yaxis.setMaxSpeed(100000.0);
   // ENABLING MAY CAUSE PROBLEMS
   // Xaxis.setEnablePin(XmotorENA);
   // Yaxis.setEnablePin(YmotorENA);
   // Xaxis.enableOutputs();
   // Yaxis.enableOutputs();
+
+  XYaxis.addStepper(Xaxis);
+  XYaxis.addStepper(Yaxis);
+
   Serial.println("Exiting setup");
 }
 
 void loop()
 {
-  ManualMovement(keypad.getKey());
+  // ManualMovement(keypad.getKey());
 
   while (Serial.available() > 0)
   {
@@ -240,38 +246,45 @@ void ManualMovement(char key)
 {
   if (key != NO_KEY)
   {
-    Serial.println(key);
-    if (key == 1)
+    if (key == '1')
     {
+      Serial.println(key);
       setFeedrate(1);
     }
-    if (key == 3)
+    if (key == '3')
     {
+      Serial.println(key);
       setFeedrate(10);
     }
-    if (key == 7)
+    if (key == '7')
     {
-      setFeedrate(25);
+      Serial.println(key);
+      setFeedrate(20);
     }
-    if (key == 9)
+    if (key == '9')
     {
-      setFeedrate(40);
+      Serial.println(key);
+      setFeedrate(30);
     }
-    if (key == 2)
+    if (key == '2')
     {
-      move(-amount2Step, (Yaxis.currentPosition() * MMPerStep));
+      Serial.println(key);
+      move(Xaxis.currentPosition() - amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
-    if (key == 4)
+    if (key == '4')
     {
-      move(amount2Step, (Yaxis.currentPosition() * MMPerStep));
+      Serial.println(key);
+      move(Xaxis.currentPosition() + amount2Step, (Yaxis.currentPosition() * MMPerStep));
     }
-    if (key == 6)
+    if (key == '6')
     {
-      move((Xaxis.currentPosition() * MMPerStep), -amount2Step);
+      Serial.println(key);
+      move((Xaxis.currentPosition() * MMPerStep), Yaxis.currentPosition() - amount2Step);
     }
-    if (key == 8)
+    if (key == '8')
     {
-      move((Xaxis.currentPosition() * MMPerStep), amount2Step);
+      Serial.println(key);
+      move((Xaxis.currentPosition() * MMPerStep), Yaxis.currentPosition() + amount2Step);
     }
   }
 }
@@ -282,6 +295,7 @@ void setFeedrate(float feedInMMpS)
   Serial.print("Setting speed to: ");
   Serial.println(feedrate);
 }
+
 void setBrightness(int pwrIn100)
 {
   brightness = (pwrIn100 / 100) * 255;
@@ -371,44 +385,46 @@ void move(int x, int y)
   Serial.print(", ");
   Serial.println(y);
 
-  if (x > Xmax)
+  if (!skipLimits)
   {
-    x = Xmax;
-    Serial.println("X larger than canvas.");
-    return;
-  }
-  if (x < Xmin)
-  {
-    x = Xmin;
-    Serial.println("X smaller than canvas.");
-    return;
-  }
-  if (y > Ymax)
-  {
-    y = Ymax;
-    Serial.println("Y larger than canvas.");
-    return;
-  }
-  if (y < Ymin)
-  {
-    y = Ymin;
-    Serial.println("Y smaller than canvas.");
-    return;
+    if (x > Xmax)
+    {
+      x = Xmax;
+      Serial.println("X larger than canvas.");
+      return;
+    }
+    if (x < Xmin)
+    {
+      x = Xmin;
+      Serial.println("X smaller than canvas.");
+      return;
+    }
+    if (y > Ymax)
+    {
+      y = Ymax;
+      Serial.println("Y larger than canvas.");
+      return;
+    }
+    if (y < Ymin)
+    {
+      y = Ymin;
+      Serial.println("Y smaller than canvas.");
+      return;
+    }
   }
 
   long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
   long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
 
-  Xaxis.moveTo(xInSteps);
-  Yaxis.moveTo(yInSteps);
+  Xaxis.setMaxSpeed(feedrate);
+  Yaxis.setMaxSpeed(feedrate);
 
-  Xaxis.setSpeed(feedrate);
-  Yaxis.setSpeed(feedrate);
+  long positions[2];
 
-  do
-  {
-    poll_steppers();
-  } while (is_moving());
+  positions[0] = xInSteps;
+  positions[1] = yInSteps;
+  XYaxis.moveTo(positions);
+  XYaxis.runSpeedToPosition(); // Blocks until all are in position CHANGE LATER
 
   Serial.println("Move Successful");
 }
