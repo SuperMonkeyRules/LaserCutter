@@ -22,6 +22,7 @@ AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 En
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
 MultiStepper XYaxis;
 
+/*
 const byte ROWS = 4; // four rows
 const byte COLS = 3; // three columns
 char keys[ROWS][COLS] = {
@@ -33,7 +34,7 @@ byte rowPins[ROWS] = {5, 4, 3, 2}; // connect to the row pinouts of the kpd
 byte colPins[COLS] = {8, 7, 6};    // connect to the column pinouts of the kpd
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-
+*/
 const int Xmax = 500; // Max X bed size
 const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
@@ -57,7 +58,7 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(LaserPWM, OUTPUT);
   pinMode(LaserTGL, OUTPUT);
-  digitalWrite(LaserTGL, true);
+  // digitalWrite(LaserTGL, LOW);
 
   Serial.println("Setting up motors");
   // ENABLING MAY CAUSE PROBLEMS
@@ -300,8 +301,8 @@ void setFeedrate(float feedInMMpS)
 
 void setBrightness(int pwrIn100)
 {
-  brightness = (pwrIn100 / 100) * 255;
-  Serial.print("Laser: ");
+  brightness = (pwrIn100 * 255) / 100;
+  Serial.print("Laser power: ");
   Serial.println(brightness);
 }
 
@@ -358,8 +359,8 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
 void laserTest()
 {
   laserToggle(1);
-  setBrightness(5);
-  laserToggle(0);
+  setBrightness(10);
+  laserToggle(-1);
   delay(5);
   laserToggle(1);
 }
@@ -436,13 +437,13 @@ void laserToggle(int Zaxis)
   if (Zaxis >= 0)
   {
     digitalWrite(LED_BUILTIN, false);
-    digitalWrite(LaserTGL, true);
+    digitalWrite(LaserTGL, HIGH);
     analogWrite(LaserPWM, 0);
     Xaxis.setSpeed(TravSpeed);
     Yaxis.setSpeed(TravSpeed);
     if (debug)
     {
-      Serial.println("Pen up.");
+      Serial.println("Laser DISABLED");
       Serial.println("Traversal Speed Set.");
     }
   }
@@ -450,10 +451,10 @@ void laserToggle(int Zaxis)
   {
     digitalWrite(LED_BUILTIN, true);
     analogWrite(LaserPWM, brightness);
-    digitalWrite(LaserTGL, false);
+    digitalWrite(LaserTGL, LOW);
     if (debug)
     {
-      Serial.println("Pen down.");
+      Serial.println("Laser ACTIVE");
     }
   }
 }
