@@ -15,8 +15,8 @@ const int XmotorENA = 13; // GPIO pin 13
 const int YmotorPUL = 16; // GPIO pin 16
 const int YmotorDIR = 17; // GPIO pin 17
 const int YmotorENA = 18; // GPIO pin 18
-const int LaserPWM = 3;   // GPIO pin 1
-const int LaserTGL = 2;   // GPIO pin 0
+// const int LaserPWM = 3;   // GPIO pin 1
+// const int LaserTGL = 5;   // GPIO pin 0
 
 AccelStepper Xaxis(1, XmotorPUL, XmotorDIR); // Xaxis motor on PUL 15, DIR 14 Enable 13
 AccelStepper Yaxis(1, YmotorPUL, YmotorDIR); // Xaxis motor on PUL 16, DIR 17 Enable 18
@@ -56,9 +56,9 @@ void setup()
   Serial.print("Version: ");
   Serial.println(version);
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LaserPWM, OUTPUT);
-  pinMode(LaserTGL, OUTPUT);
-  // digitalWrite(LaserTGL, LOW);
+  // pinMode(LaserPWM, OUTPUT);
+  // pinMode(LaserTGL, OUTPUT);
+  // digitalWrite(LaserTGL, HIGH);
 
   Serial.println("Setting up motors");
   // ENABLING MAY CAUSE PROBLEMS
@@ -308,6 +308,7 @@ void setBrightness(int pwrIn100)
 
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal)
 {
+  /*
   float startX = (prevXaxisVal)*MMPerStep;
   float startY = (prevYaxisVal)*MMPerStep;
 
@@ -354,6 +355,7 @@ void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int y
     }
     move(round(stepX), round(stepY));
   }
+  */
 }
 
 void laserTest()
@@ -361,19 +363,8 @@ void laserTest()
   laserToggle(1);
   setBrightness(10);
   laserToggle(-1);
-  delay(5);
+  delay(5000);
   laserToggle(1);
-}
-
-void poll_steppers(void)
-{
-  Xaxis.runSpeedToPosition();
-  Yaxis.runSpeedToPosition();
-}
-
-bool is_moving(void)
-{
-  return (Xaxis.currentPosition() != Xaxis.targetPosition() || Xaxis.currentPosition() != Xaxis.targetPosition());
 }
 
 void move(int x, int y)
@@ -437,8 +428,8 @@ void laserToggle(int Zaxis)
   if (Zaxis >= 0)
   {
     digitalWrite(LED_BUILTIN, false);
-    digitalWrite(LaserTGL, HIGH);
-    analogWrite(LaserPWM, 0);
+    // digitalWrite(LaserTGL, HIGH);
+    // analogWrite(LaserPWM, 0);
     Xaxis.setSpeed(TravSpeed);
     Yaxis.setSpeed(TravSpeed);
     if (debug)
@@ -450,8 +441,8 @@ void laserToggle(int Zaxis)
   else
   {
     digitalWrite(LED_BUILTIN, true);
-    analogWrite(LaserPWM, brightness);
-    digitalWrite(LaserTGL, LOW);
+    // analogWrite(LaserPWM, brightness);
+    // digitalWrite(LaserTGL, LOW);
     if (debug)
     {
       Serial.println("Laser ACTIVE");
