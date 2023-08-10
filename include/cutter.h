@@ -3,7 +3,7 @@
 
 void setFeedrate(float feedInMMpS);
 void setBrightness(int pwrIn100);
-void laserToggle(int Zaxis);
+void laserToggle(float Zaxis);
 void processIncomingLine(char *line);
 void move(int x, int y);
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal);
