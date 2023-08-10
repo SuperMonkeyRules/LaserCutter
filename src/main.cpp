@@ -40,8 +40,8 @@ const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = 0.0F;  // Speed in mm/s of motors
-float TravSpeed = 0.0F; // Traversal speed in steps
+float feedrate = 0.0F;  // Speed in steps of motors
+float TravSpeed = 3000.0F; // Traversal speed in steps
 int amount2Step = 50;   // Manual movements in mm
 int brightness = 0;     // Laser power 0-100
 
@@ -431,8 +431,8 @@ void laserToggle(int Zaxis)
     // digitalWrite(LED_BUILTIN, false);
     digitalWrite(LaserTGL, LOW);
     analogWrite(LaserPWM, 0);
-    Xaxis.setSpeed(TravSpeed);
-    Yaxis.setSpeed(TravSpeed);
+    Xaxis.setMaxSpeed(TravSpeed);
+    Yaxis.setMaxSpeed(TravSpeed);
     if (debug)
     {
       Serial.println("Laser DISABLED");
