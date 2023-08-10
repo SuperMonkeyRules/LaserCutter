@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.21
+#define version 1.22
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -129,7 +129,7 @@ void processIncomingLine(char *line)
       }
       if (indexZ)
       {
-        laserToggle(atoi(indexZ + 1));
+        laserToggle(atof(indexZ + 1));
       }
       move(atoi(indexX + 1), atoi(indexY + 1));
       break;
@@ -150,7 +150,7 @@ void processIncomingLine(char *line)
       }
       if (indexZ)
       {
-        laserToggle(atoi(indexZ + 1));
+        laserToggle(atof(indexZ + 1));
       }
       if (atoi(cmd + 1) == 3)
         dir = 1;
@@ -424,9 +424,9 @@ void move(int x, int y)
   Serial.println("Move Successful");
 }
 
-void laserToggle(int Zaxis)
+void laserToggle(float Zaxis)
 {
-  if (Zaxis >= 0)
+  if (Zaxis >= 0.0F)
   {
     // digitalWrite(LED_BUILTIN, false);
     digitalWrite(LaserTGL, LOW);
