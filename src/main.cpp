@@ -40,10 +40,10 @@ const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = 0.0F;  // Speed in steps of motors
+float feedrate = 0.0F;     // Speed in steps of motors
 float TravSpeed = 3000.0F; // Traversal speed in steps
-int amount2Step = 50;   // Manual movements in mm
-int brightness = 0;     // Laser power 0-100
+int amount2Step = 50;      // Manual movements in mm
+int brightness = 0;        // Laser power 0-100
 
 const boolean debug = true;
 boolean skipLimits = true;
@@ -113,12 +113,7 @@ void processIncomingLine(char *line)
     switch (atoi(line + 1))
     {
     case 0:
-    case 1:
-      if (!indexX || !indexY)
-      {
-        Serial.println("No X OR Y");
-        break;
-      }
+    case 1: // ORDER IS IMPORTANT
       if (indexS)
       {
         setBrightness(atoi(indexS + 1));
@@ -130,6 +125,11 @@ void processIncomingLine(char *line)
       if (indexZ)
       {
         laserToggle(atof(indexZ + 1));
+      }
+      if (!indexX || !indexY)
+      {
+        Serial.println("No X OR Y");
+        break;
       }
       move(atoi(indexX + 1), atoi(indexY + 1));
       break;
@@ -426,7 +426,7 @@ void move(int x, int y)
 
 void laserToggle(float Zaxis)
 {
-  if (Zaxis >= 0.0F)
+  if (Zaxis >= 0)
   {
     // digitalWrite(LED_BUILTIN, false);
     digitalWrite(LaserTGL, LOW);
