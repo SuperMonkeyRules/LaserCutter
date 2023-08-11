@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.23
+#define version 1.24
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -120,18 +120,18 @@ void processIncomingLine(char *line)
       }
       if (indexF)
       {
-        setFeedrate(atof(indexF + 1));
+        setFeedrate(atoff(indexF + 1));
       }
       if (indexZ)
       {
-        laserToggle(atof(indexZ + 1));
+        laserToggle(atoff(indexZ + 1));
       }
       if (!indexX || !indexY)
       {
         Serial.println("No X OR Y");
         break;
       }
-      move(atoi(indexX + 1), atoi(indexY + 1));
+      move(atoff(indexX + 1), atoff(indexY + 1));
       break;
     case 2:
     case 3:
@@ -146,15 +146,15 @@ void processIncomingLine(char *line)
       }
       if (indexF)
       {
-        setFeedrate(atof(indexF + 1));
+        setFeedrate(atoff(indexF + 1));
       }
       if (indexZ)
       {
-        laserToggle(atof(indexZ + 1));
+        laserToggle(atoff(indexZ + 1));
       }
       if (atoi(cmd + 1) == 3)
         dir = 1;
-      expandArc(dir, Xaxis.currentPosition(), Yaxis.currentPosition(), atoi(indexX + 1), atoi(indexY + 1), atoi(indexI + 1), atoi(indexJ + 1));
+      expandArc(dir, Xaxis.currentPosition(), Yaxis.currentPosition(), atoff(indexX + 1), atoff(indexY + 1), atoff(indexI + 1), atoff(indexJ + 1));
       break;
     case 21:
       Serial.println("Set to Millimeters (NOT REALLY)");
@@ -368,7 +368,7 @@ void laserTest()
   laserToggle(1);
 }
 
-void move(int x, int y)
+void move(float x, float y)
 {
   Serial.print("Currently at ");
   Serial.print(Xaxis.currentPosition() * MMPerStep);
@@ -408,8 +408,8 @@ void move(int x, int y)
     }
   }
 
-  long xInSteps = static_cast<long>(static_cast<float>(x) / MMPerStep);
-  long yInSteps = static_cast<long>(static_cast<float>(y) / MMPerStep);
+  long xInSteps = static_cast<long>(x / MMPerStep);
+  long yInSteps = static_cast<long>(y / MMPerStep);
 
   Xaxis.setMaxSpeed(feedrate);
   Yaxis.setMaxSpeed(feedrate);
