@@ -5,7 +5,7 @@ void setFeedrate(float feedInMMpS);
 void setBrightness(int pwrIn100);
 void laserToggle(float Zaxis);
 void processIncomingLine(char *line);
-void move(int x, int y);
+void move(float x, float y);
 void expandArc(int dirn, int prevXaxisVal, int prevYaxisVal, int xAxisVal, int yAxisVal, float iVal, float jVal);
 void laserTest();
 void poll_steppers(void);
