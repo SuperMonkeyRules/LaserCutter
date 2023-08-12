@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.31
+#define version 1.32
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -40,10 +40,9 @@ const int Ymax = 500; // Max Y bed size
 const int Xmin = 0;   // Min X bed size
 const int Ymin = 0;   // Min Y bed size
 
-float feedrate = 0.0F;     // Speed in steps of motors
-float TravSpeed = 3000.0F; // Traversal speed in steps
-int amount2Step = 50;      // Manual movements in mm
-int brightness = 0;        // Laser power 0-100
+float feedrate = 0.0F; // Speed in steps of motors
+int amount2Step = 50;  // Manual movements in mm
+int brightness = 0;    // Laser power 0-100
 
 const boolean debug = true;
 boolean skipLimits = true;
@@ -298,8 +297,11 @@ void ManualMovement(char key)
 
 void setFeedrate(float feedInMMpM)
 {
-  if (feedInMMpM == 0.0F)
+  if (feedInMMpM <= 0.0F)
+  {
     laserToggle(1);
+    return;
+  }
   feedrate = ((feedInMMpM / 60.0F) / MMPerStep);
   Serial.print("Setting speed to: ");
   Serial.println(feedrate);
