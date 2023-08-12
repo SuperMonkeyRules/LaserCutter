@@ -436,7 +436,7 @@ void laserToggle(float Zaxis)
     // digitalWrite(LED_BUILTIN, false);
     digitalWrite(LaserTGL, LOW);
     analogWrite(LaserPWM, 0);
-    setFeedrate(300.0F)
+    setFeedrate(300.0F);
     if (debug)
     {
       Serial.println("Laser DISABLED");
