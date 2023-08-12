@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.24
+#define version 1.30
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -117,6 +117,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(atoi(indexS + 1));
+        laserToggle(-1.0F)
       }
       if (indexF)
       {
@@ -143,6 +144,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(atoi(indexS + 1));
+        laserToggle(-1.0F)
       }
       if (indexF)
       {
@@ -191,6 +193,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(0);
+        laserToggle(1.0F)
       }
       break;
     case 8:
@@ -293,9 +296,11 @@ void ManualMovement(char key)
   }
 }
 
-void setFeedrate(float feedInMMpS)
+void setFeedrate(float feedInMMpM)
 {
-  feedrate = (feedInMMpS / MMPerStep);
+  if (feedInMMpM == 0.0F)
+    laserToggle(1);
+  feedrate = ((feedInMMpM / 60.0F) / MMPerStep);
   Serial.print("Setting speed to: ");
   Serial.println(feedrate);
 }
