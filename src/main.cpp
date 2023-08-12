@@ -117,7 +117,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(atoi(indexS + 1));
-        laserToggle(-1.0F)
+        laserToggle(-1.0F);
       }
       if (indexF)
       {
@@ -144,7 +144,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(atoi(indexS + 1));
-        laserToggle(-1.0F)
+        laserToggle(-1.0F);
       }
       if (indexF)
       {
@@ -193,7 +193,7 @@ void processIncomingLine(char *line)
       if (indexS)
       {
         setBrightness(0);
-        laserToggle(1.0F)
+        laserToggle(1.0F);
       }
       break;
     case 8:
