@@ -102,7 +102,8 @@ void processIncomingLine(char *line)
   char *indexF = strchr(line, 'F');
   char *indexS = strchr(line, 'S');
   char *indexP = strchr(line, 'P');
-
+  float xCoord = atoff(indexX + 1);
+  float yCoord = atoff(indexY + 1);
   Serial.println(line[0]);
   int dir = 0;
 
@@ -126,12 +127,15 @@ void processIncomingLine(char *line)
       {
         laserToggle(atoff(indexZ + 1));
       }
-      if (!indexX || !indexY)
+      if (!indexX)
       {
-        Serial.println("No X OR Y");
-        break;
+        xCoord = Xaxis.currentPosition() * MMPerStep;
       }
-      move(atoff(indexX + 1), atoff(indexY + 1));
+      if (!indexY)
+      {
+        yCoord = Yaxis.currentPosition() * MMPerStep;
+      }
+      move(xCoord, yCoord);
       break;
     case 2:
     case 3:
@@ -438,7 +442,7 @@ void laserToggle(float Zaxis)
     // digitalWrite(LED_BUILTIN, false);
     digitalWrite(LaserTGL, LOW);
     analogWrite(LaserPWM, 0);
-    setFeedrate(300.0F);
+    setFeedrate(1800.0F);
     if (debug)
     {
       Serial.println("Laser DISABLED");
