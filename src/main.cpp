@@ -136,7 +136,7 @@ void processIncomingLine(char *line)
         }
         else
         {
-          xCoord = 0
+          xCoord = 0;
         }
       }
       if (!indexY)
@@ -147,7 +147,7 @@ void processIncomingLine(char *line)
         }
         else
         {
-          yCoord = 0
+          yCoord = 0;
         }
       }
       move(xCoord, yCoord);
