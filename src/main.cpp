@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.35
+#define version 1.36
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -130,11 +130,25 @@ void processIncomingLine(char *line)
       }
       if (!indexX)
       {
-        xCoord = Xaxis.currentPosition() * MMPerStep;
+        if (absPos)
+        {
+          xCoord = Xaxis.currentPosition() * MMPerStep;
+        }
+        else
+        {
+          xCoord = 0
+        }
       }
       if (!indexY)
       {
-        yCoord = Yaxis.currentPosition() * MMPerStep;
+        if (absPos)
+        {
+          yCoord = Yaxis.currentPosition() * MMPerStep;
+        }
+        else
+        {
+          yCoord = 0
+        }
       }
       move(xCoord, yCoord);
       break;
@@ -395,14 +409,8 @@ void move(float x, float y)
 
   if (!absPos)
   {
-    if (x != (Xaxis.currentPosition() * MMPerStep))
-    {
-      x = (Xaxis.currentPosition() * MMPerStep) + x;
-    }
-    if (y != (Yaxis.currentPosition() * MMPerStep))
-    {
-      y = (Yaxis.currentPosition() * MMPerStep) + y;
-    }
+    x = (Xaxis.currentPosition() * MMPerStep) + x;
+    y = (Yaxis.currentPosition() * MMPerStep) + y;
   }
 
   Serial.print("Moving to ");
