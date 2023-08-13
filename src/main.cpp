@@ -3,7 +3,7 @@
 #include <MultiStepper.h>
 #include <Keypad.h>
 #include <cutter.h>
-#define version 1.32
+#define version 1.35
 
 const float defaultStep = 1.0 / 25.0; // 200 steps = 8 mm | 100 steps = 4 mm | 25 steps = 1mm
 float MMPerStep = defaultStep / 4;    // Changeable mm per step
@@ -46,6 +46,7 @@ int brightness = 0;    // Laser power 0-100
 
 const boolean debug = true;
 boolean skipLimits = true;
+boolean absPos = true;
 
 void setup()
 {
@@ -167,6 +168,12 @@ void processIncomingLine(char *line)
     case 28:
       Serial.println("HOMING");
       move(0, 0);
+      break;
+    case 90:
+      absPos = true;
+      break;
+    case 91:
+      absPos = false;
       break;
     default:
       Serial.println("=====ERROR ON CASE G=====");
@@ -385,6 +392,18 @@ void move(float x, float y)
   Serial.print(Xaxis.currentPosition() * MMPerStep);
   Serial.print(", ");
   Serial.println(Yaxis.currentPosition() * MMPerStep);
+
+  if (!absPos)
+  {
+    if (x != (Xaxis.currentPosition() * MMPerStep))
+    {
+      x = (Xaxis.currentPosition() * MMPerStep) + x;
+    }
+    if (y != (Yaxis.currentPosition() * MMPerStep))
+    {
+      y = (Yaxis.currentPosition() * MMPerStep) + y;
+    }
+  }
 
   Serial.print("Moving to ");
   Serial.print(x);
